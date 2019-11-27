@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/userM');
 module.exports = (req, res, next) => {
     try {
+
         console.log(req.headers.authorization);
         console.log(req.body)
         const token = req.headers.authorization.split(" ")[1]; //fetch 1st prt of token n send through headers

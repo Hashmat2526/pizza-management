@@ -67,7 +67,7 @@ exports.products_get_single_product = (req, res, next) => {
 exports.products_update_product = (req, res, next) => {
     const id = req.params.productId;
     const updateOps = {};
-    for (const ops of updateOps) {
+    for (const ops of req.body) {
         updateOps[ops.propName] = ops.value
     }
     Product.updateOne({ _id: id }, { $set: updateOps })
@@ -84,7 +84,19 @@ exports.products_update_product = (req, res, next) => {
         })
 };
 exports.products_delete_product = (req, res, next) => {
-    res.status(200).json({
-        message: 'deleted order successfully'
-    })
+    const id = req.params.productId;
+    Product.remove({ _id: id })
+        .exec()
+        .then(result => {
+            console.log(result)
+            res.status(200).json({
+                message: 'product deleted',
+                result
+            })
+        })
+        .catch(err => {
+            res.status(500).json({
+                error: err
+            })
+        })
 };
