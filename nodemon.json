@@ -1,0 +1,6 @@
+{
+    "env": {
+        "MONGO_ATLAS_PW": "superior.com",
+        "JWT_KEY": "secretPizza"
+    }
+}
