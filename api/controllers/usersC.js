@@ -64,6 +64,7 @@ exports.users_login = (req, res, next) => {
                     const token = jwt.sign({
                         email: user[0].email,
                         userId: user[0]._id,
+                        isAdmin: user[0].isAdmin
                     },
                         process.env.JWT_KEY,
                         {
