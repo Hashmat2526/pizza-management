@@ -5,7 +5,6 @@ const checkRole = require('../middleware/check-role');
 
 const ProductsController = require('../controllers/productsC')
 
-
 router.get('/', checkAuth, ProductsController.products_get_all);
 router.get('/:productId', checkAuth, ProductsController.products_get_single_product);
 router.post('/', checkAuth, checkRole, ProductsController.products_create_product);

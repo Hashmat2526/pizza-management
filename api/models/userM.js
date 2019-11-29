@@ -15,11 +15,6 @@ const userSchema = mongoose.Schema({
     isAdmin: {
         type: Boolean,
         default: false
-    },
-    status: {
-        type: String,
-        enum: ['offline', 'online'],
-        default: 'offline'
     }
 });
 module.exports = mongoose.model('User', userSchema);

@@ -20,8 +20,13 @@ const ordersSchema = mongoose.Schema({
         type: String,
         enum: ['completed', 'processing', 'pending'],
         default: 'pending'
+    },
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     }
-
-})
+},
+    { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } })
 
 module.exports = mongoose.model('Order', ordersSchema);

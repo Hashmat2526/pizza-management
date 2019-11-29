@@ -24,7 +24,7 @@ exports.products_create_product = (req, res, next) => {
 exports.products_get_all = (req, res, next) => {
     Product
         .find({})
-        .select('_id price flavor productImage')
+        .select('_id price flavor productImage created_at updated_at')
         .exec()
         .then(products => {
             const response = {
@@ -34,7 +34,9 @@ exports.products_get_all = (req, res, next) => {
                         _id: product._id,
                         price: product.price,
                         flavor: product.flavor,
-                        productImage: product.productImage
+                        productImage: product.productImage,
+                        created_at: product.created_at,
+                        updated_at: product.updated_at
                     }
                 })
             }
@@ -48,7 +50,7 @@ exports.products_get_all = (req, res, next) => {
 exports.products_get_single_product = (req, res, next) => {
     const id = req.params.productId;
     Product.findById(id)
-        .select('_id price flavor productImage')
+        .select('_id price flavor productImage created_at updated_at')
         .exec()
         .then(product => {
             if (product) {

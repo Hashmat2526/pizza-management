@@ -1,57 +1,64 @@
 const mongoose = require('mongoose');
 const Order = require('../models/orderM');
 const Product = require('../models/productM')
+const User = require('../models/userM')
 
-exports.orders_create_order = (req, res, next) => {
-    console.log('here')
-    Product.findById(req.body.productId)
-        .exec()
-        .then(product => {
-            if (!product) {
-                return res.status(404).json({ message: 'product not found' })
+
+exports.orders_create_order = async (req, res, next) => {
+    try {
+        // checking for the same user
+        console.log(req.userData.userId, req.body.userId)
+        if (req.userData.userId !== req.body.userId) {
+            return res.status(401).json({
+                message: " please create post with your own account "
+            })
+        }
+        const product = await Product.findById(req.body.productId).select('-__v');
+        const user = await User.findById(req.body.userId).select('-__v');
+        const order = new Order({
+            _id: new mongoose.Types.ObjectId(),
+            quantity: req.body.quantity,
+            product: product._id,
+            size: req.body.size,
+            user: user._id
+        })
+        let result = await order.save();
+
+        res.status(201).json({
+            message: 'order saved',
+            createdOrder: {
+                _id: result._id,
+                product: product,
+                quantity: result.quantity,
+                user
+            },
+            request: {
+                type: 'GET',
+                url: "http://localhost:4000/orders/" + order._id
             }
-            const order = new Order({
-                _id: new mongoose.Types.ObjectId(),
-                quantity: req.body.quantity,
-                product: req.body.productId,
-                size: req.body.size
-            });
-            return order.save()
         })
-        .then(result => {
-            res.status(201).json({
-                message: 'order saved',
-                createdOrder: {
-                    _id: result._id,
-                    product: result.product,
-                    quantity: result.quantity
-                },
-                request: {
-                    type: 'GET',
-                    url: "http://localhost:4000/orders/" + result._id
-                }
-            })
+    } catch (error) {
+        res.status(500).json({
+            message: 'order not saved'
         })
-        .catch(err => {
-
-            console.log(err + " waefsdaffffffffffffffffff");
-            res.status(500).json({
-                error: err
-            })
-        });
+    }
 }
 exports.orders_get_all = (req, res, next) => {
+
     Order.find()
         .select('product quantity _id status size')
         .populate('product', '_id flavor price')
+        .populate('user', '_id email')
         .exec()
         .then(docs => {
+            console.log(`ok`)
             res.status(200).json({
                 count: docs.length,
                 orders: docs.map(doc => {
                     return {
                         _id: doc._id,
                         product: doc.product,
+                        user: doc.user,
                         quantity: doc.quantity,
                         status: doc.status,
                         size: doc.size,
@@ -74,6 +81,7 @@ exports.orders_get_single_order = (req, res, next) => {
     Order.findById(id)
         .select('product quantity _id status size')
         .populate('product', '_id flavor price')
+        .populate('user', '_id email')
         .exec()
         .then(docs => {
             if (!docs) {
@@ -85,6 +93,7 @@ exports.orders_get_single_order = (req, res, next) => {
                 orders: {
                     _id: docs._id,
                     product: docs.product,
+                    user: docs.user,
                     quantity: docs.quantity,
                     status: docs.status,
                     size: docs.size,
@@ -137,4 +146,78 @@ exports.orders_delete_order = (req, res, next) => {
         .catch(err => {
             res.status(500).json({ error: err })
         });
+}
+
+exports.orders_search_order = (req, res, next) => {
+    const { size, startDate, endDate } = req.query;
+
+    const sd = new Date(new Date(startDate).setHours(00, 00, 00))
+    const ed = new Date(new Date(endDate).setHours(00, 00, 00))
+
+    console.log(sd, ed)
+    Order.find({
+        created_at: {
+            $lte: ed,
+            $gt: sd
+        }, size: size.toUpperCase()
+    })
+        .select('-__v')
+        .exec().then(orders => {
+            console.log(orders);
+            res.status(200).json({
+                total: orders.length,
+                orders: orders
+            })
+        })
+        .catch(err => {
+            res.status(500).json({ error: err })
+        });
+
+
+
+}
+
+exports.orders_get_certain_orders = async (req, res, next) => {
+    const usersObjArr = [];
+
+    console.log(usersObjArr)
+    const usersIds = await User.find().select('_id').exec();
+    const userswithorders = await Order.find().select('user');
+
+    for await (const userid of usersIds) {
+        const { _id } = userid;
+        var count = 0;
+        console.log('users array ' + _id);
+        console.log('*****************************')
+
+        for (const orderuser of userswithorders) {
+            // console.log("count before " + count)
+            const user = orderuser.user;
+            console.log('users array ' + _id);
+            console.log('orders array ' + user);
+
+            if (_id.toString() === user.toString()) {
+                count++;
+            }
+            console.log("count after " + count);
+
+
+        }
+        usersObjArr.push({ _id, count });
+
+    }
+    console.log("final array");
+    console.log(usersObjArr)
+    let result = usersObjArr.filter(function (objarr) {
+
+        return parseInt(objarr.count) > parseInt(req.query.num);
+    })
+    // console.log(result._id.toString())
+    for (const res of result) {
+        console.log(res._id)
+    }
+    res.status(200).send(
+        result
+    )
+
 }

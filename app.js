@@ -14,7 +14,12 @@ const productRoutes = require('./api/routes/productsR');
 
 
 mongoose.connect('mongodb+srv://hashmat2526:' + process.env.MONGO_ATLAS_PW + '@mflix-kkh9f.mongodb.net/pizzmanagement?retryWrites=true&w=majority',
-    { useNewUrlParser: true, useUnifiedTopology: true })
+    { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => {
+
+        console.log(err)
+    })
+
+
 
 mongoose.Promise = global.Promise;
 
@@ -33,11 +38,10 @@ app.use((req, res, next) => {
     next()
 })
 // routes
-app.get('/', (req, res, next) => res.status(200).send(`ok`))
+
 app.use('/users', userRoutes);
 app.use('/orders', orderRoutes);
 app.use('/products', productRoutes);
-
 
 //error handling
 app.use((req, res, next) => {

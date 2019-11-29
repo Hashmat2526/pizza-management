@@ -8,7 +8,7 @@ const checkRole = require('../middleware/check-role');
 
 
 router.get('/', checkAuth, checkRole, UsersController.users_get_all_users);
-router.get('/:userId', checkAuth, checkRole, UsersController.users_with_certain_orders);
+router.get('/:userId', checkAuth, checkRole, UsersController.users_single_user);
 router.post('/signup', UsersController.users_signup);
 router.post('/login', UsersController.users_login);
 router.delete('/:userId', checkAuth, checkRole, UsersController.users_delete_user);

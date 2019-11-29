@@ -97,17 +97,19 @@ exports.users_delete_user = (req, res, next) => {
 }
 exports.users_get_all_users = (req, res, next) => {
     User.find()
-        .select('_id email isAdmin status')
+        .select('_id email isAdmin status created_at updated_at')
         .exec()
         .then(users => {
             const response = {
                 Total: users.length,
                 users: users.map(user => {
+                    const { _id, email, status, isAdmin } = user;
+
                     return {
-                        _id: user._id,
-                        email: user.email,
-                        isAdmin: user.isAdmin,
-                        status: user.status
+                        _id,
+                        email,
+                        isAdmin,
+                        status
                     }
                 })
             }
@@ -119,6 +121,19 @@ exports.users_get_all_users = (req, res, next) => {
             res.status(500).json({ error: err })
         })
 }
-exports.users_with_certain_orders = (req, res, next) => {
+exports.users_single_user = (req, res, next) => {
+    const id = req.params.userId;
+    User.findById(id)
+        .exec()
+        .then(docs => {
+            const { _id, email, status, isAdmin } = docs;
+            if (!docs) {
+                return res.status(404).json({
+                    message: 'order not found'
+                })
+            }
+            res.status(200).json({ _id, email, isAdmin, status })
+        })
 
+        .catch()
 }
